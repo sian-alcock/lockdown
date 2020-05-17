@@ -6,7 +6,9 @@ import style from "./style";
 
 export default class Letters extends Component {
   state = {
+    wordCheckEmployed: false,
     seconds: 30,
+    definitions: [],
     timer: 0,
     count: 10,
     letterCount: 0,
@@ -214,6 +216,10 @@ export default class Letters extends Component {
     , config)
     .then((response) => {
       console.log(response.data);
+      this.setState({ 
+        definitions: response.data['definitions'],
+        wordCheckEmployed: true
+     });
     })
     .catch((error)=> {
       console.log(error);
@@ -227,6 +233,7 @@ export default class Letters extends Component {
   // Note: `user` comes from the URL, courtesy of our router
   render() {
     console.log(this.state.playMode);
+    console.log(this.state.definitions);
 
     return (
       <div class={style.profile}>
@@ -302,7 +309,7 @@ export default class Letters extends Component {
           </button>
         </div>
 
-        <div class={style.clock}>
+        <div class={this.state.playMode !== "finished" ? style.clock : style.clockOff}>
           <div class={style.clockFace}>
             <div
               style={{
@@ -320,23 +327,41 @@ export default class Letters extends Component {
         </div>
 
         <form class={this.state.playMode === "finished" ? style.form: style.formOff} name="wordToCheck" onSubmit={this.checkWord.bind(this)}>
-          <input class={style.answer} id="wordToCheck" name="inputWord" type="text" placeholder="Check word features in dictionary" />
-
-          <input type="Submit" class={style.button} value="Submit word" />
+          <div class={style.column}>
+            <input class={style.answer} id="wordToCheck" name="inputWord" type="text" />
+            <input type="Submit" class={style.button} value="Check word in dictionary" />
+          </div>
+            <div class={style.wordContainer}>
+            {this.state.wordCheckEmployed && this.state.definitions.length === 0
+              ? "❌ Word not found"
+              : <div>
+              <span>{this.state.definitions.length > 0 ? "✅ Word found! Definition(s):" : ""}</span>
+              <ul> {this.state.definitions.map((result) => (
+                
+                    <li>{result.definition}</li>
+                  
+                ))}
+                </ul></div>}
+                
+            </div>
         </form>
 
-        <div class={this.state.playMode === "finished" ? style.computerChoices: style.computerChoicesOff}>
-          {!this.state.computerAnagrams
-            ? ""
-            : `The computer found ${this.state.computerAnagrams.length} word(s).`}
-            <button onClick={this.showComputerChoices.bind(this)}>Click here to view word(s)</button>
-          <ul class={this.state.computerChoicesOpen ? style.computerChoicesShown : style.computerChoicesHidden}>
+  
+        <div class={this.state.playMode === "finished" ? style.listContainer: style.listContainerOff}>
+          <div class={this.state.playMode === "finished" ? style.computerChoices: style.computerChoicesOff}>
             {!this.state.computerAnagrams
               ? ""
-              : this.state.computerAnagrams.map((result) => (
-                  <li>{result.word}</li>
-                ))}
-          </ul>
+              : `The computer found ${this.state.computerAnagrams.length} word(s). Longest word has ${this.state.computerAnagrams[0]['length']} characters.  `}
+              <a href="#" class={this.state.playMode === "finished" ? style.link : style.linkOff} onClick={this.showComputerChoices.bind(this)}>  Click here</a> to view word(s):
+              
+              <ul class={this.state.computerChoicesOpen ? style.computerChoicesShown : style.computerChoicesHidden}>
+                {!this.state.computerAnagrams
+                  ? ""
+                  : this.state.computerAnagrams.map((result) => (
+                  <li>{result.word} - length {result.length}</li>
+                    ))}
+              </ul>
+            </div>
         </div>
       </div>
     );
