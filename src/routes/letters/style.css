@@ -122,7 +122,35 @@ transition: all 0.15s ease 0s;
   height: 150px;
 }
 
+.formOff {
+  display: none;
+}
+
 .answer {
   width: 300px;
   height: 30px;
+}
+
+.computerChoices {
+  display: block;
+}
+
+.computerChoicesOff {
+  display: none;
+}
+
+.checkWord {
+  display: block;
+}
+
+.checkWordOff {
+  display: none;
+}
+
+.computerChoicesShown {
+  display: block;
+}
+
+.computerChoicesHidden {
+  display: none
 }

@@ -1,5 +1,4 @@
 import { h, Component } from "preact";
-
 import axios from "axios";
 import style from "./style";
 
@@ -15,6 +14,7 @@ export default class Letters extends Component {
     playMode: "choosingLetters", // choosingLetters, ready, finished
     timerMessage: "",
     secondsDegrees: 90,
+    computerChoicesOpen: false
   };
 
   getVowel = () => {
@@ -178,7 +178,7 @@ export default class Letters extends Component {
 
     axios
       .get(
-        `https://danielthepope-countdown-v1.p.rapidapi.com/solve/${letterString}?variance=0`,
+        `https://danielthepope-countdown-v1.p.rapidapi.com/solve/${letterString}?variance=1`,
         {
           headers: {
             "x-rapidapi-host": "danielthepope-countdown-v1.p.rapidapi.com",
@@ -194,6 +194,34 @@ export default class Letters extends Component {
       .catch((error) => {
         console.log(error);
       });
+  }
+
+  checkWord(e) {
+    e.preventDefault();
+    console.log('is this even working??')
+    console.log(event.target['inputWord'].value)
+  
+    const wordToCheck = event.target['inputWord'].value
+    
+    let config = {
+      headers: {
+        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
+      }
+    }
+
+    axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
+    , config)
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch((error)=> {
+      console.log(error);
+    });
+  }
+
+  showComputerChoices() {
+    this.setState({computerChoicesOpen: true})
   }
 
   // Note: `user` comes from the URL, courtesy of our router
@@ -291,19 +319,18 @@ export default class Letters extends Component {
           </div>
         </div>
 
-        <form class={style.form}>
-          <input class={style.answer} type="text" />
+        <form class={this.state.playMode === "finished" ? style.form: style.formOff} name="wordToCheck" onSubmit={this.checkWord.bind(this)}>
+          <input class={style.answer} id="wordToCheck" name="inputWord" type="text" placeholder="Check word features in dictionary" />
 
-          <button class={style.button} onClick={this.checkWord}>
-            Submit word
-          </button>
+          <input type="Submit" class={style.button} value="Submit word" />
         </form>
 
-        <div>
+        <div class={this.state.playMode === "finished" ? style.computerChoices: style.computerChoicesOff}>
           {!this.state.computerAnagrams
             ? ""
-            : `The computer found ${this.state.computerAnagrams.length} word(s) containing ${this.state.computerAnagrams[0].length} characters.`}
-          <ul>
+            : `The computer found ${this.state.computerAnagrams.length} word(s).`}
+            <button onClick={this.showComputerChoices.bind(this)}>Click here to view word(s)</button>
+          <ul class={this.state.computerChoicesOpen ? style.computerChoicesShown : style.computerChoicesHidden}>
             {!this.state.computerAnagrams
               ? ""
               : this.state.computerAnagrams.map((result) => (
