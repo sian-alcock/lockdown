@@ -1,4 +1,5 @@
 import { h, Component } from "preact";
+import { useState } from "preact/hooks";
 import axios from "axios";
 import style from "./style";
 
@@ -14,10 +15,12 @@ export default class Letters extends Component {
     letterCount: 0,
     letters: [],
     playMode: "choosingLetters", // choosingLetters, ready, finished
-    timerMessage: "",
     secondsDegrees: 90,
-    computerChoicesOpen: false
+    computerChoicesOpen: false,
+    enteredText: '',
+    wordMisMatch: false,
   };
+   
 
   getVowel = () => {
     const vowelsArray = [
@@ -167,8 +170,7 @@ export default class Letters extends Component {
     if (countSeconds === 0) {
       clearInterval(this.timer);
       this.setState({
-        playMode: "finished",
-        timerMessage: "Time is up!!!",
+        playMode: "finished"
       });
     }
   }
@@ -200,35 +202,62 @@ export default class Letters extends Component {
 
   checkWord(e) {
     e.preventDefault();
-    console.log('is this even working??')
-    console.log(event.target['inputWord'].value)
-  
     const wordToCheck = event.target['inputWord'].value
     
-    let config = {
-      headers: {
-        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-        "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
+    // if(wordToCheck.split('').every(letter => this.state.letters.includes(letter))) {
+      let config = {
+        headers: {
+          "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+          "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
+        }
       }
-    }
+  
+      axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
+      , config)
+      .then((response) => {
+        console.log(response.data);
+        this.setState({ 
+          definitions: response.data['definitions'],
+          wordCheckEmployed: true
+       });
+      })
+      .catch((error)=> {
+        console.log(error);
+      });
 
-    axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
-    , config)
-    .then((response) => {
-      console.log(response.data);
-      this.setState({ 
-        definitions: response.data['definitions'],
-        wordCheckEmployed: true
-     });
-    })
-    .catch((error)=> {
-      console.log(error);
-    });
+    // } else {
+    //   this.setState({wordMisMatch: true,})
+    // }
+
+    
   }
 
   showComputerChoices() {
     this.setState({computerChoicesOpen: true})
   }
+
+  clearInput() {
+    if(this.state.wordMisMatch) {
+      this.setState({
+        enteredText: '',
+        wordMisMatch: false})
+    }
+  }
+
+  playAgain() {
+    this.setState({
+      playMode: 'choosingLetters',
+      letterCount: 0,
+      letters: [],
+      computerChoicesOpen: false,
+      secondsDegrees: 90,
+      enteredText: '',
+      wordMisMatch: false,
+      defintions: []
+    })
+  }
+
+ 
 
   // Note: `user` comes from the URL, courtesy of our router
   render() {
@@ -237,6 +266,7 @@ export default class Letters extends Component {
 
     return (
       <div class={style.profile}>
+        <div class={style.innerContainer}>
         <div class={style.instructionContainer}>
           <p
             class={
@@ -252,7 +282,7 @@ export default class Letters extends Component {
         <div class={style.buttonContainer}>
           <button
             class={
-              this.state.letters.length < 9 ? style.button : style.buttonOff
+              this.state.playMode !== "finished" ? style.button : style.buttonOff
             }
             onClick={this.getVowel}
           >
@@ -260,7 +290,7 @@ export default class Letters extends Component {
           </button>
           <button
             class={
-              this.state.letters.length < 9 ? style.button : style.buttonOff
+              this.state.playMode !== "finished" ? style.button : style.buttonOff
             }
             onClick={this.getConsonant}
           >
@@ -309,6 +339,17 @@ export default class Letters extends Component {
           </button>
         </div>
 
+        <div class={style.playAgainContainer}>
+          <button
+            class={
+              this.state.playMode === "finished" ? style.button : style.buttonOff
+            }
+            onClick={this.playAgain.bind(this)}
+          >
+            Play again
+          </button>
+        </div>
+
         <div class={this.state.playMode !== "finished" ? style.clock : style.clockOff}>
           <div class={style.clockFace}>
             <div
@@ -318,7 +359,7 @@ export default class Letters extends Component {
                 left: "0%",
                 transformOrigin: "100%",
                 transform: `rotate(${this.state.secondsDegrees}deg)`,
-                background: "black",
+                background: "aqua",
                 height: "4px",
                 width: "50%",
               }}
@@ -328,12 +369,13 @@ export default class Letters extends Component {
 
         <form class={this.state.playMode === "finished" ? style.form: style.formOff} name="wordToCheck" onSubmit={this.checkWord.bind(this)}>
           <div class={style.column}>
-            <input class={style.answer} id="wordToCheck" name="inputWord" type="text" />
+            <input class={style.answer} id="wordToCheck" name="inputWord" type="text" value={this.state.enteredText} />
+
             <input type="Submit" class={style.button} value="Check word in dictionary" />
           </div>
             <div class={style.wordContainer}>
             {this.state.wordCheckEmployed && this.state.definitions.length === 0
-              ? "❌ Word not found"
+              ? "❌ Word not found in dictionary"
               : <div>
               <span>{this.state.definitions.length > 0 ? "✅ Word found! Definition(s):" : ""}</span>
               <ul> {this.state.definitions.map((result) => (
@@ -362,6 +404,7 @@ export default class Letters extends Component {
                     ))}
               </ul>
             </div>
+        </div>
         </div>
       </div>
     );
