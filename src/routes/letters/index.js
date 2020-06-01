@@ -253,7 +253,7 @@ export default class Letters extends Component {
       secondsDegrees: 90,
       enteredText: '',
       wordMisMatch: false,
-      defintions: []
+      definitions: []
     })
   }
 
