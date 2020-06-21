@@ -128,7 +128,7 @@ export default class Letters extends Component {
   }
 
   startPlayback() {
-    const audioPromise = new Audio("../../assets/audio/countdown.mp3").play();
+    const audioPromise = new Audio("../../assets/audio/countdown-1.mp3").play();
     return audioPromise;
   }
 
