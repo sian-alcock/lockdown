@@ -6,6 +6,7 @@ import Header from './header';
 // Code-splitting is automated for routes
 import Numbers from '../routes/numbers';
 import Letters from '../routes/letters';
+import LettersNew from '../routes/lettersNew';
 
 export default class App extends Component {
 	
@@ -24,6 +25,7 @@ export default class App extends Component {
 				<Router onChange={this.handleRoute}>
 					<Letters path="/" />
 					<Numbers path="/numbers" />
+					<LettersNew path="/lettersNew" />
 
 				</Router>
 			</div>

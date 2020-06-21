@@ -1,5 +1,5 @@
 import { h, Component } from "preact";
-import { useState } from "preact/hooks";
+// import { useState } from "preact/hooks";
 import axios from "axios";
 import style from "./style";
 
@@ -10,15 +10,13 @@ export default class Letters extends Component {
     wordCheckEmployed: false,
     seconds: 30,
     definitions: [],
-    timer: 0,
-    count: 10,
     letterCount: 0,
     letters: [],
     playMode: "choosingLetters", // choosingLetters, ready, finished
     secondsDegrees: 90,
     computerChoicesOpen: false,
     enteredText: '',
-    wordMisMatch: false,
+    wordMismatch: false,
   };
    
 
@@ -177,7 +175,7 @@ export default class Letters extends Component {
 
   getComputerAnagrams(letterArray) {
     console.log(letterArray);
-    const letterString = letterArray.join("");
+    const letterString = letterArray.join("").slice(0, 9);
     console.log({ letterString });
 
     axios
@@ -202,47 +200,66 @@ export default class Letters extends Component {
 
   checkWord(e) {
     e.preventDefault();
-    const wordToCheck = event.target['inputWord'].value
+    const wordToCheck = event.target['inputWord'].value.toLowerCase();
+    const lettersLowerCase = this.state.letters.join('|').toLowerCase().split('|');
+
+    console.log(wordToCheck)
+    console.log(wordToCheck.split(''))
+    console.log(this.state.letters)
     
-    // if(wordToCheck.split('').every(letter => this.state.letters.includes(letter))) {
-      let config = {
-        headers: {
-          "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-          "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
-        }
-      }
-  
-      axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
-      , config)
-      .then((response) => {
-        console.log(response.data);
-        this.setState({ 
-          definitions: response.data['definitions'],
-          wordCheckEmployed: true
-       });
+    if(wordToCheck.split('').every(letter => lettersLowerCase.includes(letter))) {
+      this.setState({
+        enteredText: wordToCheck,
+        wordCheckEmployed: true,
+        wordMismatch: false,
+      }, () => this.checkWordInDictionary(wordToCheck)
+      )
+    } else {
+      this.setState({
+        enteredText: wordToCheck,
+        wordCheckEmployed: true,
+        wordMismatch: true,
       })
-      .catch((error)=> {
-        console.log(error);
-      });
+    } 
+  }
 
-    // } else {
-    //   this.setState({wordMisMatch: true,})
-    // }
+  checkWordInDictionary(wordToCheck){
+    this.setState({
+      definitions: [],
+      wordCheckEmployed: false,
+    })
+    let config = {
+      headers: {
+        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
+      }
+    }
 
-    
+    axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
+    , config)
+    .then((response) => {
+      console.log(response.data);
+      this.setState({ 
+        definitions: response.data['definitions'],
+        wordCheckEmployed: true,
+     });
+    })
+    .catch((error)=> {
+      console.log(error);
+    });
   }
 
   showComputerChoices() {
     this.setState({computerChoicesOpen: true})
   }
 
-  clearInput() {
-    if(this.state.wordMisMatch) {
-      this.setState({
-        enteredText: '',
-        wordMisMatch: false})
-    }
-  }
+  // clearInput() {
+  //   if(this.state.wordMismatch) {
+  //     this.setState({
+  //       enteredText: '',
+  //       wordMismatch: false})
+  //   }
+  // }
 
   playAgain() {
     this.setState({
@@ -252,8 +269,9 @@ export default class Letters extends Component {
       computerChoicesOpen: false,
       secondsDegrees: 90,
       enteredText: '',
-      wordMisMatch: false,
-      definitions: []
+      wordMismatch: false,
+      definitions: [],
+      wordCheckEmployed: false,
     })
   }
 
@@ -282,7 +300,7 @@ export default class Letters extends Component {
         <div class={style.buttonContainer}>
           <button
             class={
-              this.state.playMode !== "finished" ? style.button : style.buttonOff
+              this.state.playMode === "choosingLetters" ? style.button : style.buttonOff
             }
             onClick={this.getVowel}
           >
@@ -290,7 +308,7 @@ export default class Letters extends Component {
           </button>
           <button
             class={
-              this.state.playMode !== "finished" ? style.button : style.buttonOff
+              this.state.playMode === "choosingLetters" ? style.button : style.buttonOff
             }
             onClick={this.getConsonant}
           >
@@ -374,16 +392,17 @@ export default class Letters extends Component {
             <input type="Submit" class={style.button} value="Check word in dictionary" />
           </div>
             <div class={style.wordContainer}>
-            {this.state.wordCheckEmployed && this.state.definitions.length === 0
-              ? "❌ Word not found in dictionary"
+              {this.state.wordCheckEmployed && this.state.wordMismatch ? `❌ '${this.state.enteredText}' - word cannot be derived from letters above!` : this.state.wordCheckEmployed && !this.state.wordMismatch && this.state.definitions.length === 0
+              ? `❌ '${this.state.enteredText}' not found in dictionary`
               : <div>
-              <span>{this.state.definitions.length > 0 ? "✅ Word found! Definition(s):" : ""}</span>
+              <span>{this.state.wordCheckEmployed && !this.state.wordMismatch && this.state.definitions.length > 0 ? `✅ '${this.state.enteredText}' found in dictionary! Definition(s):` : ""}</span>
               <ul> {this.state.definitions.map((result) => (
                 
                     <li>{result.definition}</li>
                   
                 ))}
-                </ul></div>}
+                </ul>
+            </div>}
                 
             </div>
         </form>

@@ -1,343 +1,295 @@
-import { h, Component } from 'preact';
-import { useState, useEffect } from "preact/hooks";
-import style from './style';
-// import { getCurrentUrl } from 'preact-router';
-import axios from 'axios';
+import { h, Component } from "preact";
+// import { useState } from "preact/hooks";
+import style from "./style";
 
-const BetterLetters = () => {
-    const [letters, setLetters] = useState([]);
-    const [letterCount, setLetterCount] = useState(0);
-    let [seconds, setSeconds] = useState(30);
-    const [playMode, setPlayMode] = useState('choosingLetters'); // choosingLetters, ready, finished
-    let [secondsDegrees, setSecondsDegrees] = useState(90);
-    const [computerChoicesOpen, setComputerChoicesOpen] = useState(false);
-    const [enteredText, setEnteredText] = useState('');
-    const [wordMisMatch, setWordMisMatch] = useState(false);
-    const [definitions, setDefinitions] = useState([]);
-    const [wordCheckEmployed, setWordCheckEmployed] = useState(false);
-    const [timer, setTimer] = useState(0);
-    // const [count, setCount] = useState(10);
-    const [computerAnagrams, setComputerAnagrams] = useState([])
 
-    function getVowel () {
-      const vowelsArray = [
-        ["A", 15],
-        ["E", 21],
-        ["I", 13],
-        ["O", 13],
-        ["U", 5],
-      ];
-  
-      // Get the total weight
-      let total = 1;
-      for (let i = 0; i < vowelsArray.length; ++i) {
-        total += vowelsArray[i][1];
-      }
-  
-      console.log({ total });
-  
-      // Get random index
-      const threshold = Math.floor(Math.random() * total);
-  
-      console.log({ threshold });
-  
-      // Find value that meets threshold
-      total = 0;
-      for (let i = 0; i < vowelsArray.length; ++i) {
-        // Add the weight to our running total.
-        total += vowelsArray[i][1];
-  
-        // If this value falls within the threshold, we're done!
-        if (total >= threshold) {
-          const randomVowel = vowelsArray[i][0];
-          setLetters([...letters, randomVowel]);
-          setLetterCount(letterCount + 1);
-          break;
-        }
-      }
+
+export default class Numbers extends Component {
+  state = {
+    targetNumber: 0,
+    seconds: 30,
+    definitions: [],
+    largeNumberCount: 0,
+    numberCount: 0,
+    numbers: [],
+    playMode: "choosingNumbers", // choosingNumbers, getTargetNumber, ready, finished
+    secondsDegrees: 90,
+    noMoreLargeNumbers: false,
+  };
+   
+
+  getLargeNumber = () => {
+    const largeNumbersArray = [
+      [25, 1],
+      [50, 1],
+      [75, 1],
+      [100, 1],
+    ];
+
+    // Get the total weight
+    let total = 1;
+    for (let i = 0; i < largeNumbersArray.length; ++i) {
+      total += largeNumbersArray[i][1];
     }
 
-    function getConsonant () {
-      const consonantsArray = [
-        ["B", 2],
-        ["C", 3],
-        ["D", 6],
-        ["F", 2],
-        ["G", 3],
-        ["H", 2],
-        ["J", 1],
-        ["K", 1],
-        ["L", 5],
-        ["M", 4],
-        ["N", 8],
-        ["P", 4],
-        ["Q", 1],
-        ["R", 9],
-        ["S", 9],
-        ["T", 9],
-        ["V", 1],
-        ["W", 1],
-        ["X", 1],
-        ["Y", 1],
-        ["Z", 1],
-      ];
-  
-      // Get the total weight
-      let total = 1;
-      for (let i = 0; i < consonantsArray.length; ++i) {
-        total += consonantsArray[i][1];
-      }
-  
-      console.log({ total });
-  
-      // Get random index
-      const threshold = Math.floor(Math.random() * total);
-  
-      // Find value that meets threshold
-      total = 0;
-      for (let i = 0; i < consonantsArray.length; ++i) {
-        // Add the weight to our running total.
-        total += consonantsArray[i][1];
-  
-        // If this value falls within the threshold, we're done!
-        if (total >= threshold) {
-          const randomConsonant = consonantsArray[i][0];
-          setLetters([...letters, randomConsonant]);
-          setLetterCount(letterCount + 1);
-          break;
-        }
-      }
-    }
+    console.log({ total });
 
-    useEffect(() => {
-      'Is this being called every time?'
-      if (letterCount === 9) {
-        console.log({letterCount});
-        setPlayMode('ready');
-        setSeconds(30);
-      }
-    }, [letters, letterCount])
+    // Get random index
+    const threshold = Math.floor(Math.random() * total);
 
-    function startPlayback() {
-      const audioPromise = new Audio("../../assets/audio/countdown.mp3").play();
-      return audioPromise;
-    }
+    console.log({ threshold });
 
-    function startTimer() {
-      // fetch best responses from CountDown API
-      getComputerAnagrams(letters);
-  
-      console.log(seconds);
-      if (seconds && seconds > 0) {
-        console.log("Attempting to play automatically...");
-  
-        startPlayback()
-          .then(() => {
-            console.log("The play() Promise fulfilled! Rock on!");
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    }
+    // Find value that meets threshold
+    total = 0;
+    for (let i = 0; i < largeNumbersArray.length; ++i) {
+      // Add the weight to our running total.
+      total += largeNumbersArray[i][1];
 
-    useEffect(setTimer(setInterval(() => {
-        setSeconds(seconds -= 1);
-        setSecondsDegrees(secondsDegrees += (360/60));
-        if (seconds === 0) {
-          console.log('is this check happening??')
-          clearInterval(timer);
-          setPlayMode('finished');
-        }
-      }, 1000)), [seconds, secondsDegrees]);
-
-    // function countDown() {
-    //   // Remove one second, set state so a re-render happens.
-    //   console.log("counting down the seconds ...");
-  
-    //   // let countSeconds = seconds - 1;
-    //   // let secondsDegrees = secondsDegrees + 360 / 60;
-    //   setSeconds(seconds -= 1);
-    //   setSecondsDegrees(secondsDegrees += (360/60));
-
-  
-    //   // Check if we're at zero.
-    //   if (seconds === 0) {
-    //     console.log('is this check happening??')
-    //     clearInterval(timer);
-    //     setPlayMode('finished');
-    //   }
-    // }
-
-    function getComputerAnagrams(letterArray) {
-      console.log(letterArray);
-      const letterString = letterArray.join("");
-      console.log({ letterString });
-  
-      axios
-        .get(
-          `https://danielthepope-countdown-v1.p.rapidapi.com/solve/${letterString}?variance=1`,
+      // If this value falls within the threshold, we're done!
+      if (total >= threshold) {
+        const randomLargeNumber = largeNumbersArray[i][0];
+        this.setState(
           {
-            headers: {
-              "x-rapidapi-host": "danielthepope-countdown-v1.p.rapidapi.com",
-              "x-rapidapi-key":
-                "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c",
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response.data);
-          setComputerAnagrams(response.data);
+            numbers: [...this.state.numbers, randomLargeNumber],
+            numberCount: this.state.numberCount + 1,
+            largeNumberCount: this.state.largeNumberCount + 1,
+          },
+          () => this.checkNumbers()
+        );
+        break;
+      }
+    }
+  };
+
+  getSmallNumber = () => {
+    const smallNumbersArray = [
+      [1, 2],
+      [2, 2],
+      [3, 2],
+      [4, 2],
+      [5, 2],
+      [6, 2],
+      [7, 2],
+      [8, 2],
+      [9, 2],
+      [10, 2],
+    ];
+
+    // Get the total weight
+    let total = 1;
+    for (let i = 0; i < smallNumbersArray.length; ++i) {
+      total += smallNumbersArray[i][1];
+    }
+
+    console.log({ total });
+
+    // Get random index
+    const threshold = Math.floor(Math.random() * total);
+
+    // Find value that meets threshold
+    total = 0;
+    for (let i = 0; i < smallNumbersArray.length; ++i) {
+      // Add the weight to our running total.
+      total += smallNumbersArray[i][1];
+
+      // If this value falls within the threshold, we're done!
+      if (total >= threshold) {
+        const randomSmallNumber = smallNumbersArray[i][0];
+        this.setState(
+          {
+            numbers: [...this.state.numbers, randomSmallNumber],
+            numberCount: this.state.numberCount + 1,
+          },
+          () => this.checkNumbers()
+        );
+        break;
+      }
+    }
+  };
+
+  checkNumbers() {
+    //When total reaches six - hide the buttons
+    if (this.state.numberCount === 6) {
+      console.log(this.state.numberCount);
+      this.setState({
+          playMode: "getTargetNumber"
+        });
+    }
+
+    if(this.state.largeNumberCount === 4) {
+      this.setState({
+        noMoreLargeNumbers: true,
+      })
+    }
+  }
+
+  startPlayback() {
+    const audioPromise = new Audio("../../assets/audio/countdown.mp3").play();
+    return audioPromise;
+  }
+
+  startTimer() {
+
+
+    console.log(this.state.seconds);
+    if (this.state.seconds && this.state.seconds > 0) {
+      console.log("Attempting to play automatically...");
+
+      this.startPlayback()
+        .then(() => {
+          console.log("The play() Promise fulfilled! Rock on!");
         })
         .catch((error) => {
+          console.log("The play() Promise rejected!");
+          console.log("Use the Play button instead.");
           console.log(error);
         });
+      this.timer = setInterval(this.countDown.bind(this), 1000);
     }
+  }
 
-    function checkWord(e) {
-      e.preventDefault();
-      const wordToCheck = event.target['inputWord'].value
-      
-      // if(wordToCheck.split('').every(letter => this.state.letters.includes(letter))) {
-        let config = {
-          headers: {
-            "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-            "x-rapidapi-key": "5e458fcdc9msheb1cb44d935da2fp1cbb49jsnd1ef623fd51c"
-          }
-        }
-    
-        axios.get(`https://wordsapiv1.p.rapidapi.com/words/${wordToCheck}/definitions/`
-        , config)
-        .then((response) => {
-          console.log(response.data);
-          
-            setDefinitions(response.data['definitions']);
-            setWordMisMatch(true);
-        })
-        .catch((error)=> {
-          console.log(error);
-        });
-  
-      // } else {
-      //   this.setState({wordMisMatch: true,})
-      // }
-  
-      
+  countDown() {
+    // Remove one second, set state so a re-render happens.
+    console.log("counting down the seconds ...");
+
+    let countSeconds = this.state.seconds - 1;
+    let secondsDegrees = this.state.secondsDegrees + 360 / 60;
+    this.setState({
+      seconds: countSeconds,
+      secondsDegrees,
+    });
+
+    // Check if we're at zero.
+    if (countSeconds === 0) {
+      clearInterval(this.timer);
+      this.setState({
+        playMode: "finished"
+      });
     }
-  
-    function showComputerChoices() {
-      setComputerChoicesOpen(true);
+  }
+
+  getTargetNumber() {
+    const targetNumber = Math.floor((Math.random() * 899) + 100);
+    console.log(targetNumber);
+    if(targetNumber) {
+    this.setState({ 
+        playMode: "ready",
+        seconds: 30,
+        targetNumber
+      });
     }
-  
-    function clearInput() {
-      if(wordMisMatch) {
-        setEnteredText('');
-        setWordMisMatch(false);
-      }
-    }
-  
-    function playAgain() {
-        setPlayMode('choosingLetters');
-        setLetterCount(0);
-        setLetters([]);
-        setComputerChoicesOpen(false);
-        setSecondsDegrees(90);
-        setEnteredText('');
-        setWordMisMatch(false);
-        setDefinitions([]);
-    }
-  
-  
-    console.log(playMode);
-    console.log(secondsDegrees);
+}
+
+  playAgain() {
+    this.setState({
+      playMode: 'choosingNumbers',
+      largeNumberCount: 0,
+      numberCount: 0,
+      numbers: [],
+      targetNumber: 0,
+      secondsDegrees: 90,
+      noMoreLargeNumbers: false,
+    })
+  }
+
+
+  render() {
+    console.log(this.state.playMode);
+
     return (
-      
       <div class={style.profile}>
         <div class={style.innerContainer}>
         <div class={style.instructionContainer}>
           <p
             class={
-              playMode === "choosingLetters"
+              this.state.playMode === "choosingNumbers"
                 ? style.instructionText
                 : style.instructionTextOff
             }
           >
-            Choose a letter
+            Choose 6 numbers, including no more than 4 large numbers
           </p>
         </div>
 
         <div class={style.buttonContainer}>
           <button
             class={
-              playMode !== "finished" ? style.button : style.buttonOff
+              (this.state.playMode === "choosingNumbers" && !this.state.noMoreLargeNumbers) ? style.button : style.buttonOff
             }
-            onClick={getVowel}
+            onClick={this.getLargeNumber}
           >
-            Vowel
+            Large number
           </button>
           <button
             class={
-              playMode !== "finished" ? style.button : style.buttonOff
+              this.state.playMode === "choosingNumbers" ? style.button : style.buttonOff
             }
-            onClick={getConsonant}
+            onClick={this.getSmallNumber}
           >
-            Consonant
+            Small number
+          </button>
+
+          <button
+            class={
+              this.state.playMode === "getTargetNumber" ? style.button : style.buttonOff
+            }
+            onClick={this.getTargetNumber.bind(this)}
+          >
+            Generate Target Number
           </button>
         </div>
 
-        <div class={style.letterContainer}>
-          <div class={style.letterDiv}>
-            {letters[0] ? letters[0] : "?"}
+        <div class={style.targetNumberContainer}>
+          <div class={style.numberDiv}>
+            {this.state.targetNumber > 0 ? this.state.targetNumber : "?" }
           </div>
-          <div class={style.letterDiv}>
-            {letters[1] ? letters[1] : "?"}
+        </div>
+
+        <div class={style.numberContainer}>
+          <div class={style.numberDiv}>
+            {this.state.numbers[0] ? this.state.numbers[0] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[2] ? letters[2] : "?"}
+          <div class={style.numberDiv}>
+            {this.state.numbers[1] ? this.state.numbers[1] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[3] ? letters[3] : "?"}
+          <div class={style.numberDiv}>
+            {this.state.numbers[2] ? this.state.numbers[2] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[4] ? letters[4] : "?"}
+          <div class={style.numberDiv}>
+            {this.state.numbers[3] ? this.state.numbers[3] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[5] ? letters[5] : "?"}
+          <div class={style.numberDiv}>
+            {this.state.numbers[4] ? this.state.numbers[4] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[6] ? letters[6] : "?"}
+          <div class={style.numberDiv}>
+            {this.state.numbers[5] ? this.state.numbers[5] : "?"}
           </div>
-          <div class={style.letterDiv}>
-            {letters[7] ? letters[7] : "?"}
-          </div>
-          <div class={style.letterDiv}>
-            {letters[8] ? letters[8] : "?"}
-          </div>
+
         </div>
 
         <div class={style.startGame}>
           <button
             class={
-              playMode === "ready" ? style.button : style.buttonOff
+              this.state.playMode === "ready" ? style.button : style.buttonOff
             }
-            onClick={startTimer}
+            onClick={this.startTimer.bind(this)}
           >
-            Start Countdown
+            Start countdown
           </button>
         </div>
 
         <div class={style.playAgainContainer}>
           <button
             class={
-              playMode === "finished" ? style.button : style.buttonOff
+              this.state.playMode === "finished" ? style.button : style.buttonOff
             }
-            onClick={playAgain}
+            onClick={this.playAgain.bind(this)}
           >
             Play again
           </button>
         </div>
 
-        <div class={playMode !== "finished" ? style.clock : style.clockOff}>
+        <div class={this.state.playMode !== "finished" ? style.clock : style.clockOff}>
           <div class={style.clockFace}>
             <div
               style={{
@@ -345,7 +297,7 @@ const BetterLetters = () => {
                 top: "50%",
                 left: "0%",
                 transformOrigin: "100%",
-                transform: `rotate(${secondsDegrees}deg)`,
+                transform: `rotate(${this.state.secondsDegrees}deg)`,
                 background: "aqua",
                 height: "4px",
                 width: "50%",
@@ -353,53 +305,8 @@ const BetterLetters = () => {
             />
           </div>
         </div>
-
-        <form class={playMode === "finished" ? style.form: style.formOff} name="wordToCheck" onSubmit={checkWord}>
-          <div class={style.column}>
-            <input class={style.answer} id="wordToCheck" name="inputWord" type="text" value={enteredText} />
-
-            <input type="Submit" class={style.button} value="Check word in dictionary" />
-          </div>
-            <div class={style.wordContainer}>
-            {wordCheckEmployed && definitions.length === 0
-              ? "❌ Word not found in dictionary"
-              : <div>
-              <span>{definitions.length > 0 ? "✅ Word found! Definition(s):" : ""}</span>
-              <ul> {definitions.map((result) => (
-                
-                    <li>{result.definition}</li>
-                  
-                ))}
-                </ul></div>}
-                
-            </div>
-        </form>
-
-  
-        {/* <div class={playMode === "finished" ? style.listContainer: style.listContainerOff}>
-          <div class={playMode === "finished" ? style.computerChoices: style.computerChoicesOff}>
-            {!computerAnagrams
-              ? ""
-              : `The computer found ${computerAnagrams.length} word(s). Longest word has ${computerAnagrams[0]['length']} characters.  `}
-              <a href="#" class={playMode === "finished" ? style.link : style.linkOff} onClick={showComputerChoices}>  Click here</a> to view word(s):
-              
-              <ul class={computerChoicesOpen ? style.computerChoicesShown : style.computerChoicesHidden}>
-                {!computerAnagrams
-                  ? ""
-                  : computerAnagrams.map((result) => (
-                  <li>{result.word} - length {result.length}</li>
-                    ))}
-              </ul>
-            </div>
-        </div> */}
-        
+        </div>
       </div>
-    </div>
-
-  );
-
-
+    );
+  }
 }
-
-
-  export default BetterLetters
