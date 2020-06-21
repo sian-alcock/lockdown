@@ -4,8 +4,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "wepback -p",
-  "deploy": "npm run build && gh-pages -d dist",
+    "build": "preact build",
     "serve": "sirv build --cors --single",
     "dev": "preact watch",
     "lint": "eslint src",
@@ -37,6 +36,7 @@
     "dotenv": "^8.2.0",
     "gh-pages": "^3.1.0",
     "nvm": "0.0.4",
+    "per-env": "^1.0.2",
     "preact": "^10.3.2",
     "preact-render-to-string": "^5.1.4",
     "preact-router": "^3.2.1"
