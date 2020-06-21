@@ -2,7 +2,7 @@ import { h, Component } from 'preact';
 import { Router } from 'preact-router';
 
 import Header from './header';
-import baseroute from '../../baseroute'; // <-- make sure path correctly
+import baseroute from '../../src/baseroute'; // <-- make sure path correctly
 
 
 // Code-splitting is automated for routes

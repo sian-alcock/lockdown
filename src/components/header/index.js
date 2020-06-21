@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { Link } from 'preact-router/match';
 import style from './style.css';
-import baseroute from '../../baseroute'; // <-- make sure path correctly
+import baseroute from '../../../src/baseroute'; // <-- make sure path correctly
 
 
 const Header = () => (
