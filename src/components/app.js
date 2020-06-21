@@ -2,6 +2,8 @@ import { h, Component } from 'preact';
 import { Router } from 'preact-router';
 
 import Header from './header';
+import baseroute from '../../baseroute'; // <-- make sure path correctly
+
 
 // Code-splitting is automated for routes
 import Numbers from '../routes/numbers';
@@ -23,9 +25,9 @@ export default class App extends Component {
 			<div id="app">
 				<Header />
 				<Router onChange={this.handleRoute}>
-					<Letters path="/" />
-					<Numbers path="/numbers" />
-					<LettersNew path="/lettersNew" />
+					<Letters path={`${baseroute}/`} />
+					<Numbers path={`${baseroute}/numbers`} />
+					<LettersNew path={`${baseroute}/lettersNew`} />
 
 				</Router>
 			</div>
