@@ -28,7 +28,6 @@ export default class App extends Component {
 					<Letters path={`${baseroute}/`} />
 					<Numbers path={`${baseroute}/numbers`} />
 					<LettersNew path={`${baseroute}/lettersNew`} />
-
 				</Router>
 			</div>
 		);
